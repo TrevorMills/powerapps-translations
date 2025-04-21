@@ -1,0 +1,176 @@
+ComponentDefinitions:
+  TranslationComponent:
+    DefinitionType: CanvasComponent
+    AllowCustomization: true
+    CustomProperties:
+      Choices:
+        PropertyKind: Input
+        DisplayName: Choices
+        Description: Choices table
+        DataType: Table
+        Default: |-
+          =Table(
+              {
+                  ID: 1,
+                  Title: "Apples",
+                  TitleFR: "Pommes",
+                  Group: "Fruits"
+              },
+              {
+                  ID: 2,
+                  Title: "Cherries",
+                  TitleFR: "Cerises",
+                  Group: "Fruits"
+              },
+              {
+                  ID: 3,
+                  Title: "Bananas",
+                  TitleFR: "Bananes",
+                  Group: "Fruits"
+              },
+              {
+                  ID: 4,
+                  Title: "Other",
+                  TitleFR: "Autre",
+                  Group: "Fruits",
+                  IsOther: true
+              }
+          )
+      Language:
+        PropertyKind: Input
+        DisplayName: Language
+        Description: The language to use for translations
+        DataType: Text
+        Default: ="en"
+      LanguageSchema:
+        PropertyKind: Input
+        DisplayName: LanguageSchema
+        Description: Define the languages for this translation component
+        DataType: Table
+        Default: |-
+          =Table(
+              {
+                  Code: "en",
+                  Column: "Title",
+                  LongColumn: "Long",
+                  ChoiceColumn: "Title"
+              },
+              {
+                  Code: "fr",
+                  Column: "TitleFR",
+                  LongColumn: "LongFR",
+                  ChoiceColumn: "TitleFR"
+              }
+          )
+      Translations:
+        PropertyKind: Input
+        DisplayName: Translations
+        Description: The Translations Table
+        DataType: Table
+        Default: |-
+          =Table(
+              {
+                  ID: 1,
+                  Title: "Sample text",
+                  TitleFR: "Exemple de texte",
+                  Context: "default"
+              },
+              {
+                  ID: 2,
+                  Title: "longtext",
+                  TitleFR: "",
+                  Context: "default",
+                  Long: "This is longer text",
+                  LongFR: "C'est un texte plus long"
+              }
+          )
+      __:
+        PropertyKind: OutputFunction
+        DisplayName: __
+        Description: Translation Function
+        DataType: Text
+        Parameters:
+          - str:
+              Description: The string to be translated
+              DataType: Text
+              Default: ="Text"
+          - ctx:
+              Description: The context for the string ( defaults to "default" )
+              IsOptional: true
+              DataType: Text
+              Default: ="default"
+      __Choices:
+        PropertyKind: OutputFunction
+        DisplayName: __Choices
+        Description: Returns a table usable as Items in a dropdown
+        DataType: Table
+        Parameters:
+          - grp:
+              Description: The group
+              DataType: Text
+              Default: ="Text"
+    Properties:
+      Height: =0
+      OnReset: =false
+      Width: =0
+      __: |-
+        =With(
+            LookUp(
+                Self.LanguageSchema,
+                Code = Self.Language
+            ) As Schema,
+            With(
+                LookUp(
+                    Self.Translations,
+                    Title = str && Context = ctx
+                ) As Translation,
+                Coalesce(
+                    Text(
+                        Column(
+                            ParseJSON(JSON(Translation)),
+                            Schema.LongColumn
+                        )
+                    ),
+                    Text(
+                        Column(
+                            ParseJSON(JSON(Translation)),
+                            Schema.Column
+                        )
+                    ),
+                    str
+                )
+            )
+        )
+      __Choices: |-
+        =With(
+            LookUp(
+                Self.LanguageSchema,
+                Code = Self.Language
+            ) As Schema,
+            ShowColumns(
+                SortByColumns(
+                    ForAll(
+                        Filter(
+                            Self.Choices,
+                            Group = grp
+                        ) As Option,
+                        {
+                            Id: Option.ID,
+                            Value: Text(
+                                Column(
+                                    ParseJSON(JSON(Option)),
+                                    Schema.ChoiceColumn
+                                )
+                            ),
+                            IsOther: Option.IsOther = true
+                        }
+                    ),
+                    "IsOther",
+                    SortOrder.Ascending,
+                    "Value"
+                ),
+                Id,
+                Value,
+                IsOther
+            )
+        )

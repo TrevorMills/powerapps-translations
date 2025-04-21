@@ -1,0 +1,73 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Scan for Translations",
+    "description": "",
+    "version": "1.0"
+  },
+  "host": "home",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [],
+  "produces": [],
+  "paths": {
+    "/": {
+      "post": {
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "string": {
+                    "type": "string",
+                    "description": "string",
+                    "title": "string"
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "context",
+                    "title": "context"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Scan for Translations",
+        "operationId": "scanForTranslations",
+        "description": "Parses a screen's code for calls to a Translation function",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "code"
+                },
+                "component": {
+                  "type": "string",
+                  "description": "component"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {},
+  "parameters": {},
+  "responses": {},
+  "securityDefinitions": {},
+  "security": [],
+  "tags": []
+}
