@@ -156,11 +156,14 @@ ComponentDefinitions:
                         ) As Option,
                         {
                             Id: Option.ID,
-                            Value: Text(
-                                Column(
-                                    ParseJSON(JSON(Option)),
-                                    Schema.ChoiceColumn
-                                )
+                            Value: Coalesce(
+                                Text(
+                                    Column(
+                                        ParseJSON(JSON(Option)),
+                                        Schema.ChoiceColumn
+                                    )
+                                ),
+                                Option.Title
                             ),
                             IsOther: Option.IsOther = true
                         }
