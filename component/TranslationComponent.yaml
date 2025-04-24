@@ -106,13 +106,14 @@ ComponentDefinitions:
         DataType: Table
         Parameters:
           - grp:
-              Description: The group
+              Description: Group
+              IsOptional: true
               DataType: Text
-              Default: ="Text"
+              Default: ="__blank__"
     Properties:
-      Height: =0
+      Height: =1
       OnReset: =false
-      Width: =0
+      Width: =1
       __: |-
         =With(
             LookUp(
@@ -152,7 +153,7 @@ ComponentDefinitions:
                     ForAll(
                         Filter(
                             Self.Choices,
-                            Group = grp
+                            Or("__blank__" = grp,Group = grp)
                         ) As Option,
                         {
                             Id: Option.ID,
@@ -165,7 +166,8 @@ ComponentDefinitions:
                                 ),
                                 Option.Title
                             ),
-                            IsOther: Option.IsOther = true
+                            IsOther: Option.IsOther = true,
+                            Title: Option.Title
                         }
                     ),
                     "IsOther",
@@ -174,6 +176,7 @@ ComponentDefinitions:
                 ),
                 Id,
                 Value,
-                IsOther
+                IsOther,
+                Title
             )
         )

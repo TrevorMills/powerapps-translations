@@ -3,11 +3,20 @@
 Add the `TranslationComponent` to your app and rename it to `T`.  Provide the proper input parameters, and then use the output parameters throughout your app:
 
 * `T.__("My String")` - use this _everywhere_ you hvae a string that needs to be translated
-* For every dropdowns:
-  * Set `Items` to `T.__Choices("MyGroup")`
-  * Set `DefaultSelectedItems` to `Filter( T.__Choices("MyGroup"), Id = ThisItem.MyGroup.Id)`
+* For every dropdown:
+  * For a dropdown controlling a Lookup field
+    * Set `Items` to `T.__Choices("MyGroup")`
+    * Set `DefaultSelectedItems` to `Filter( T.__Choices("MyGroup"), Id = ThisItem.MyGroup.Id)`
+  * For a dropdown controlling a Choice field
+    * Set `Items` to `T.__Choices("MyGroup")`
+    * Set `DefaultSelectedItems` to `Filter( T.__Choices("MyGroup"), Title = ThisItem.MyGroup.Value)`
+    * Set the `Update` property of the parent DataCard to `{Value: DataCardValue1.Selected.Title}`
 * For places you want to show the value of a choice field statically ( i.e. in a Vertical Gallery )
-  * Set `Text` to `LookUp( T.__Choices("MyGroup"), Id = ThisItem.MyGroup.Id).Value`
+  * For a Lookup field
+    * Set `Text` to `LookUp( T.__Choices("MyGroup"), Id = ThisItem.MyGroup.Id).Value`
+  * For a Choices field
+    * Set `Text` to `LookUp( T.__Choices("MyGroup"), Title = ThisItem.MyGroup.Value).Value`
+
 
 # Adding TranslationComponent
 
@@ -63,6 +72,12 @@ This defines what the component needs to know about the different languages in y
   * `LongColumn` - the translation component allows for a longer HTML column to contain longer or more sophisticated strings that you want translated.  This property should be the name of that column in the `Translations` table for this language.
   * `ChoiceColumn` - the name of the column in the `Choices` table that contains the label for the choice in this language
 
+ **CRITICALLY IMPORTANT** All columns that are referenced in your language schema **must** also show up in the default value for the Translations input parameter ( cares about `Column` and `LongColumn` columns ) or the Choices input parameter ( cares about `ChoiceColumn` columns ).  This is because Power Apps uses that default value to define the schema for these tables, and therefore what columns it will allow.  Changing the default values means updating the your custom component ( or library component if you went that direction ).  Translations will not show up if you don't do this critical step.
+
+ It's sufficient to just put a new column in once.  So, if you're adding a reference to a Column called "SpanishTitle", just add `SpanishTitle: ""` to the first record in the default Translations table of the `TranslationComponent`.
+
+![Language Schema](language-schema.png)
+
 ### Translations (Table)
 
 Pass in the SharePoint list ( or Dataverse table ) that contains your translated strings.  The columns for secondary languages are arbitrary, but must refer back to the columns referenced in the `LanguageSchema` input.  At the least, this table should contain these columns:
@@ -71,7 +86,7 @@ Pass in the SharePoint list ( or Dataverse table ) that contains your translated
 
 ### Choices (Table)
 
-The SharePoint list ( or Dataverse table ) that contains translations for LookUp columns within your app.  The columns containing the translations are arbitrary but need to match the columns referenced in `LanguageSchema`.  Beyond that, the colums that are required in this table are:
+The SharePoint list ( or Dataverse table ) that contains translations for LookUp or Choices columns within your app.  The columns containing the translations are arbitrary but need to match the columns referenced in `LanguageSchema`.  Beyond that, the colums that are required in this table are:
   * `Group` - this text field is how choices for a single field are gropued together
   * `IsOther` - choices are sorted alphabetically ( within the current language ), with any choices marked as true in this Yes/No field being sorted to the end
 
@@ -107,11 +122,29 @@ The table that is returned from this function is suitable for use in a dropdown.
 * `Id` - the ID of the row in the `Choices` list
 * `Value` - the human-readable choice ( in the proper language )
 * `IsOther` - whether the choice is "Other".  this can be useful if you need to show a text field to allow the user to fill in something describing the "Other".
+* `Title` - the original language value for this choice
 
-This function would get used in dropdowns for both the `Items` property and the `DefaultSelectedItems` property:
+This function would get used in dropdowns and can be used for fields that are either Lookup or Choices fields.
 
-* Set `Items` to `T.__Choices("MyGroup")`
-* Set `DefaultSelectedItems` to `Filter( T.__Choices("MyGroup"), Id = ThisItem.MyGroup.Id)`
+#### Lookup Fields
+
+If you're building your schema from scratch, it's possible to choose to make choice-like fields actually be Lookup fields into a single Choices list where you can group choices together and have all of the translations in a single place.
+
+However, as often as not, you're going to find yourself doing translation work with an existing schema that already has some lookup columns to existing lists.  That's fine.  You'll need to add a text column to those lists to hold the translated title for each record.  For every such lookup field that exists in your app, you're going to need to insert another instance of the `TranslationComponent`.  We recommend giving it a name relevant to the list it will be referencing.
+
+Let's say you have an app that allows updates to records in a People list.  One of the fields is a Lookup field into a Departments list.  In this example, you would add the Departments list as a data source to your app, insert another instance of the `TranslationComponent` into your app and set the input parameters as such:
+
+* `Language` - set to a variable holding the current language code of your app
+* `LanguageSchema` - define a schema as described above
+* `Choices` - the Departments data source
+* `Translations` - you can probably leave this one blank since you'll use the more general `T` component for translating strings
+
+Rename this inserted component to something like `T_Departments`.
+
+Now, for the dropdown field corresponding to the Departments lookup column:
+
+* Set `Items` to `T_Departments.__Choices()`
+* Set `DefaultSelectedItems` to `Filter( T_Departments.__Choices(), Id = ThisItem.Department.Id)`
 
 The `DefaultSelectedItems` property is necessary to set because the default `[Parent.Default]` will only ever show the default language's choice.
 
@@ -119,6 +152,30 @@ The `DefaultSelectedItems` property is necessary to set because the default `[Pa
 
 The `__Choices` function would also be used if you want to show the translated choice somewhere statically for a record, say perhaps in a Vertical Gallery.   For some text input you could use:
 
-* `LookUp( T.__Choices("MyGroup"), Id = ThisItem.MyGroup.Id).Value`
+* `LookUp( T_Departments.__Choices(), Id = ThisItem.Department.Id).Value`
+
+#### Choices Fields
+
+Probably a more likely scenario is that you have a bunch of columns on your list that are Choices.  To get these translated, you'll build out a list that will hold the translations for _all_ of your Choices columns.  This translated choices list will have columns:
+
+* `Title` - will hold the original language value of the choice
+* `Group` - will hold the group string used to say which choices belong together. We recommend using the logical column name.
+* Some other text field(s) that will hold the translation(s) of the choice
+
+> Please note, there's not really a way to sync the list of choices from your column and this separate list of choices in the translated choices list.  You'll have to keep them in sync manually.  Further, the order that choices come back from the `TranslationComponent` area always alphabetical, so they might not match the order of choices in your column
+
+With everything in place, you can update your app.  For forms, for every dropdown that corresponds to a Choices column:
+
+* Set `Items` to `T.__Choices("MyGroup")`
+* Set `DefaultSelectedItems` to `Filter( T.__Choices("MyGroup"), Title = ThisItem.MyGroup.Value)`
+* Set the `Update` property of the parent DataCard to `{Value: DataCardValue1.Selected.Title}`
+
+The `Update` property must be changed so that it's the original language choice that gets saved to the list.  That keeps things consistent.
+
+If you want to show the translated choice somewhere, say a Vertical Gallery, you would use:
+
+* `LookUp( T.__Choices("MyGroup"), Title = ThisItem.MyGroup.Title).Value`
+
+Notice the subtle difference between how Lookup and Choices columns are handled.  For Lookups, the canonical value that gets saved and referenced is the Id while for Choices, the canonical value is the Title ( which is the original language choice ).
 
 
