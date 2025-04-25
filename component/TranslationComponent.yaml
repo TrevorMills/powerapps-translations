@@ -14,7 +14,8 @@ ComponentDefinitions:
                   ID: 1,
                   Title: "English Title",
                   TitleFR: "Title Français",
-                  Group: "MyGroup"
+                  Group: "MyGroup",
+                  IsOther: false
               }
           )
       Language:
