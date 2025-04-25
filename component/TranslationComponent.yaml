@@ -12,28 +12,9 @@ ComponentDefinitions:
           =Table(
               {
                   ID: 1,
-                  Title: "Apples",
-                  TitleFR: "Pommes",
-                  Group: "Fruits"
-              },
-              {
-                  ID: 2,
-                  Title: "Cherries",
-                  TitleFR: "Cerises",
-                  Group: "Fruits"
-              },
-              {
-                  ID: 3,
-                  Title: "Bananas",
-                  TitleFR: "Bananes",
-                  Group: "Fruits"
-              },
-              {
-                  ID: 4,
-                  Title: "Other",
-                  TitleFR: "Autre",
-                  Group: "Fruits",
-                  IsOther: true
+                  Title: "English Title",
+                  TitleFR: "Title Français",
+                  Group: "MyGroup"
               }
           )
       Language:
