@@ -1,0 +1,3 @@
+# Translation Demo
+
+You can import this [Translation Demo.msapp](./Translation%20Demo.msapp) file into your own environment.  You'll have to re-establish data sources.  You can try uploading the CSV files in data to your SharePoint site and connect to those directly using the Excel for Business connector.  We haven't tried that ourselves.  If that doesn't work for you, recreate (manually) the lists in SharePoint and connect those lists as data sources within your imported app.

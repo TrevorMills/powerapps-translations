@@ -55,12 +55,6 @@ ComponentDefinitions:
                   ID: 1,
                   Title: "Sample text",
                   TitleFR: "Exemple de texte",
-                  Context: "default"
-              },
-              {
-                  ID: 2,
-                  Title: "longtext",
-                  TitleFR: "",
                   Context: "default",
                   Long: "This is longer text",
                   LongFR: "C'est un texte plus long"
