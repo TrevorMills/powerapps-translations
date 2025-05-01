@@ -1,6 +1,8 @@
 # Power Apps Translations
 
-This repo provides an example way of implementing translations for a Canvas App within Power Apps.
+This repo provides an example way of implementing translations for a Canvas App within Power Apps.  It is a companion repo to a demonstration video by [Sean Astrakhan](https://www.youtube.com/@Untethered365) at [Untethered365.com](https://www.untethered365.com/).
+
+[![IMAGE ALT TEXT](./youtube.png)](http://www.youtube.com/watch?v=RlAl5ausRO4 "Power Apps - Robust Multilanguage Tutorial | Choices, Labels even Lookups! (Canvas Apps SharePoint)")
 
 There are plenty of other examples of how to do translations for Canvas Apps, but they suffer from a handful of major drawbacks:
 
